@@ -40,7 +40,7 @@ func (stem *Stem) Add(ch byte) {
 }
 
 func (stem *Stem) ToString() string {
-	str := string(stem.b[:stem.i+1])
+	str := string(stem.b[:stem.i])
 	return str
 }
 
@@ -494,9 +494,14 @@ func (stem *Stem) step6() {
 	}
 }
 
-func (stem *Stem) stem(wordBuffer []byte, offset int, wordLen int) bool {
+func (stem *Stem) Reset() {
 	stem.i = 0
 	stem.dirty = false
+
+}
+
+func (stem *Stem) stem(wordBuffer []byte, offset int, wordLen int) bool {
+	stem.Reset()
 	if len(stem.b) < wordLen {
 		new_b := make([]byte, wordLen+EXTRA)
 		stem.b = new_b
