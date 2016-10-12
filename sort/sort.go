@@ -79,23 +79,27 @@ func q_sort(data []int, s, e int) {
 	if s >= e {
 		return
 	}
+	//chose a random position, and swap it with the first data -- data[s]
 	p_index := rand.Intn(e-s+1) + s
 	p := data[p_index]
+	data[s], data[p_index] = data[p_index], data[s]
 	i := s
 	j := e
 	for i < j {
-		for ; i < j && data[i] <= p; i += 1 {
-		}
 		for ; i < j && data[j] > p; j -= 1 {
+		}
+		for ; i < j && data[i] <= p; i += 1 {
 		}
 		if i < j {
 			data[i], data[j] = data[j], data[i]
 		}
 	}
-	data[j], data[p_index] = data[p_index], data[j]
+	//swap data j,s
+	data[j], data[s] = data[s], data[j]
 	q_sort(data, s, j-1)
 	q_sort(data, j+1, e)
 }
+
 func main() {
 	n := 8
 	data := make_array(n)
