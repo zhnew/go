@@ -100,8 +100,46 @@ func q_sort(data []int, s, e int) {
 	q_sort(data, j+1, e)
 }
 
+//heap sort
+func heap_sort(data []int) {
+	//make a heap
+	for n := 1; n < len(data); n += 1 {
+		t := n
+		for n > 0 {
+			i := (n - 1) / 2
+			if data[i] < data[n] {
+				data[i], data[n] = data[n], data[i]
+			}
+			n = i
+		}
+		n = t //restore n
+	}
+	//adjust
+	for n := len(data) - 1; n > 0; n -= 1 {
+		data[0], data[n] = data[n], data[0]
+		adjust(data, n-1)
+	}
+}
+func adjust(d []int, n int) {
+	if n <= 0 {
+		return
+	}
+	for i := 0; ; {
+		j := 2*i + 1
+		if j > n {
+			break
+		}
+		if j+1 <= n && d[j+1] > d[j] {
+			j = j + 1
+		}
+		if d[i] < d[j] {
+			d[i], d[j] = d[j], d[i]
+		}
+		i = j
+	}
+}
 func main() {
-	n := 8
+	n := 13
 	data := make_array(n)
 	data = merge_sort(data)
 	fmt.Printf("%s\t%v\n", "merge_sort", data)
@@ -114,4 +152,7 @@ func main() {
 	data = make_array(n)
 	quick_sort(data)
 	fmt.Printf("%s\t%v\n", "quick_sort", data)
+	data = make_array(n)
+	heap_sort(data)
+	fmt.Printf("%s\t%v\n", "heap_sort", data)
 }
