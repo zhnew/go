@@ -138,6 +138,51 @@ func adjust(d []int, n int) {
 		i = j
 	}
 }
+
+//shell sort
+func shell_sort(data []int) {
+	n := len(data)
+	h := 1
+	for h < n/3 {
+		h = 3*h + 1
+	}
+	for h >= 1 {
+		for i := h; i < n; i += 1 {
+			for j := i; j >= h && data[j] < data[j-h]; j -= h {
+				data[j], data[j-h] = data[j-h], data[j]
+			}
+		}
+		h /= 3
+	}
+}
+
+//quick 3 way sort
+func quick3way_sort(data []int) {
+	q3way_sort(data, 0, len(data)-1)
+}
+func q3way_sort(data []int, lo, hi int) {
+	if hi <= lo {
+		return
+	}
+	v := a[lo]
+	lt, gti := lo, hi
+	i := lo
+	for i <= gt {
+		if data[i] < v {
+			data[lt], data[i] = data[i], data[lt]
+			i += 1
+			lt += 1
+		} else if data[i] > v {
+			data[i], data[gt] = data[gt], data[i]
+			gt -= 1
+		} else {
+			i += 1
+		}
+	}
+	q3way_sort(data, lo, lt-1)
+	q3way_sort(data, gt+1, hi)
+}
+
 func main() {
 	n := 13
 	data := make_array(n)
@@ -155,4 +200,7 @@ func main() {
 	data = make_array(n)
 	heap_sort(data)
 	fmt.Printf("%s\t%v\n", "heap_sort", data)
+	data = make_array(n)
+	shell_sort(data)
+	fmt.Printf("%s\t%v\n", "shell_sort", data)
 }
