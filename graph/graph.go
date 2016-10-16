@@ -1,7 +1,10 @@
-package main
+package goraph
 
 import (
+	"bytes"
+	"encoding/json"
 	"fmt"
+	"io"
 	"sync"
 )
 
@@ -48,7 +51,7 @@ type edge struct {
 	wgt float64
 }
 
-func NewEdge(str, tgt Node, wgt float64) Edge {
+func NewEdge(src, tgt Node, wgt float64) Edge {
 	return &edge{
 		src: src,
 		tgt: tgt,
@@ -72,7 +75,7 @@ type EdgeSlice []Edge
 
 func (e EdgeSlice) Len() int           { return len(e) }
 func (e EdgeSlice) Less(i, j int) bool { return e[i].Weight() < e[j].Weight() }
-func (e EdgeSlice) Swap(i, j int) bool { e[i], e[j] = e[j], e[i] }
+func (e EdgeSlice) Swap(i, j int)      { e[i], e[j] = e[j], e[i] }
 
 type Graph interface {
 	Init()
@@ -88,6 +91,9 @@ type Graph interface {
 	GetSources(id ID) (map[ID]Node, error)
 	GetTargets(id ID) (map[ID]Node, error)
 	String() string
+	GetEdges() []Edge
+	GetOutEdge(id ID) []Edge
+	GetInEdge(id ID) []Edge
 }
 
 type graph struct {
@@ -97,7 +103,7 @@ type graph struct {
 	nodeToTargets map[ID]map[ID]float64
 }
 
-func newGraph() *Graph {
+func newGraph() *graph {
 	return &graph{
 		idToNodes:     make(map[ID]Node),
 		nodeToSources: make(map[ID]map[ID]float64),
@@ -196,6 +202,55 @@ func (g *graph) AddEdge(id1, id2 ID, weight float64) error {
 	return nil
 }
 
+func (g *graph) GetEdges() []Edge {
+	g.mu.RLock()
+	defer g.mu.RUnlock()
+	edges := []Edge{}
+	for u, umap := range g.nodeToTargets {
+		for v, weight := range umap {
+			edgeuv := &edge{
+				src: g.idToNodes[u],
+				tgt: g.idToNodes[v],
+				wgt: weight,
+			}
+			edges = append(edges, edgeuv)
+		}
+	}
+	return edges
+}
+
+func (g *graph) GetOutEdge(id ID) []Edge {
+	g.mu.RLock()
+	defer g.mu.RUnlock()
+	u := id
+	edges := []Edge{}
+	umap := g.nodeToTargets[u]
+	for v, weight := range umap {
+		euv := &edge{
+			src: g.idToNodes[u],
+			tgt: g.idToNodes[v],
+			wgt: weight,
+		}
+		edges = append(edges, euv)
+	}
+	return edges
+}
+func (g *graph) GetInEdge(id ID) []Edge {
+	g.mu.RLock()
+	defer g.mu.RUnlock()
+	v := id
+	edges := []Edge{}
+	vmap := g.nodeToSources[v]
+	for u, weight := range vmap {
+		euv := &edge{
+			src: g.idToNodes[u],
+			tgt: g.idToNodes[v],
+			wgt: weight,
+		}
+		edges = append(edges, euv)
+	}
+	return edges
+}
 func (g *graph) ReplaceEdge(id1, id2 ID, weight float64) error {
 	g.mu.Lock()
 	defer g.mu.Unlock()
@@ -352,7 +407,4 @@ func NewGraphFromJSON(rd io.Reader, graphID string) (Graph, error) {
 	}
 
 	return g, nil
-}
-func main() {
-	fmt.Println("vim-go")
 }
